@@ -40,5 +40,7 @@ find_package(Armadillo REQUIRED)
 # Math libraries
 set(link_math_lib ${ARMADILLO_LIBRARIES})
 
-# add_subdirectory(src)
+set(dlf_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+
+add_subdirectory(src)
 add_subdirectory(tests)

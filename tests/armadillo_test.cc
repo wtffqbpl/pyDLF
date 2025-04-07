@@ -4,7 +4,7 @@
 #include <iostream>
 
 
-TEST(armadillo, basic_test) {
+TEST(ArmadilloTest, Basic) {
   using namespace arma;
 
   arma::fmat a1 =

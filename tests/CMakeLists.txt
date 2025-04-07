@@ -1,5 +1,7 @@
 file(GLOB_RECURSE pydlf_test_srcs *.cc)
 
+include(GoogleTest)
+
 add_executable(pydlf_test ${pydlf_test_srcs})
 
 target_link_libraries(pydlf_test
@@ -9,10 +11,13 @@ target_link_libraries(pydlf_test
 target_include_directories(pydlf_test
     PRIVATE
         ${ARMADILLO_INCLUDE_DIR}
+        ${dlf_INCLUDE_DIR}
 )
 
+enable_testing()
 
-target_link_libraries(pydlf_test PRIVATE GTest::gtest_main)
+target_link_libraries(pydlf_test PRIVATE
+        dlf
+        GTest::gtest_main)
 
-include(GoogleTest)
 gtest_discover_tests(pydlf_test)
