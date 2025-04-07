@@ -97,7 +97,7 @@ for epoch in range(num_epochs):
 
 ## Documentation
 
-For full documentation, visit [docs.dlf.ai](https://docs.dlf.ai).
+For full documentation, visit [pyDLF](https://wtffqbpl.github.io/pyDLF/).
 
 ## Contributing
 
