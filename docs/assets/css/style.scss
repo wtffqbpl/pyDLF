@@ -1,0 +1,64 @@
+@import "{{ site.theme }}";
+
+/* Custom styles for DLF docs */
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+.main-content {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.main-content h1, 
+.main-content h2,
+.main-content h3,
+.main-content h4,
+.main-content h5,
+.main-content h6 {
+  color: #2c3e50;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  padding: 0.2em 0.4em;
+  background-color: rgba(27, 31, 35, 0.05);
+  border-radius: 3px;
+}
+
+pre {
+  background-color: #f6f8fa;
+  border-radius: 3px;
+  padding: 16px;
+  overflow: auto;
+}
+
+pre > code {
+  background-color: transparent;
+  padding: 0;
+}
+
+a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.site-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 2rem 0;
+  border-top: solid 1px #eff0f1;
+}
+
+.page-header {
+  background-color: #159957;
+  background-image: linear-gradient(120deg, #155799, #159957);
+} 
