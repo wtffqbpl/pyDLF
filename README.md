@@ -14,6 +14,8 @@ DLF is a flexible and efficient library for deep learning that provides GPU acce
 - Optimizers for model training
 - Data loading and preprocessing utilities
 - Support for distributed training
+- Comprehensive logging system with file and console output
+- Unit testing with Google Test
 
 ## Installation
 
@@ -106,3 +108,97 @@ Contributions are welcome! Please check out our [contribution guidelines](CONTRI
 ## License
 
 DLF is released under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Logging System
+
+The framework includes a comprehensive logging system based on spdlog. The logger provides:
+
+- Multiple log levels (TRACE, DEBUG, INFO, WARN, ERROR, CRITICAL)
+- Both file and console output
+- Source file and line number tracking
+- Colorized console output
+- Automatic log file rotation
+- Thread-safe logging
+
+### Usage
+
+```cpp
+#include <utils/logger.hpp>
+
+// Initialize the logger
+dlf::Logger::getInstance().initialize("my_log_file.log");
+
+// Log messages at different levels
+DLF_LOG_TRACE("Trace message");
+DLF_LOG_DEBUG("Debug message");
+DLF_LOG_INFO("Info message");
+DLF_LOG_WARN("Warning message");
+DLF_LOG_ERROR("Error message");
+DLF_LOG_CRITICAL("Critical message");
+
+// Log with formatting
+int value = 42;
+DLF_LOG_INFO("The answer is {}", value);
+
+// Ensure logs are written to disk
+dlf::Logger::getInstance().flush();
+```
+
+### Log Format
+
+The default log format includes:
+- Timestamp: `[%Y-%m-%d %H:%M:%S.%e]`
+- Log level: `[%l]`
+- Source location: `[%s:%#]`
+- Message: `%v`
+
+Example log output:
+```
+[2024-04-08 09:33:30.220] [info] [logger_test.cc:111] Test pattern
+```
+
+## Building
+
+### Prerequisites
+
+- C++20 compatible compiler
+- CMake 3.20 or higher
+- Python 3.8 or higher
+- spdlog
+- pybind11
+- Google Test
+
+### Build Steps
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/pydlf.git
+cd pydlf
+
+# Create build directory
+mkdir build && cd build
+
+# Configure and build
+cmake ..
+cmake --build .
+
+# Run tests
+ctest
+```
+
+## Testing
+
+The framework includes comprehensive unit tests using Google Test. To run the tests:
+
+```bash
+cd build
+ctest --output-on-failure
+```
+
+## Documentation
+
+Detailed documentation is available in the `docs` directory:
+
+- [API Reference](docs/api.md)
+- [Tutorial](docs/tutorial.md)
+- [Contributing Guide](docs/contributing.md)

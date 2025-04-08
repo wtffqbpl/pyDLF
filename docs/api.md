@@ -80,4 +80,124 @@ for inputs, targets in dataloader:
     optimizer.step()
 ```
 
+## Logging System
+
+### Logger Class
+
+The `Logger` class provides a singleton-based logging system using spdlog.
+
+```cpp
+namespace dlf {
+
+class Logger {
+public:
+    // Get the singleton instance
+    static Logger& getInstance();
+
+    // Initialize the logger with a log file
+    void initialize(const std::string& log_file = "dlf.log");
+
+    // Flush the log buffer to disk
+    void flush();
+
+    // Get the underlying spdlog logger
+    [[nodiscard]] std::shared_ptr<spdlog::logger> getLogger() const;
+};
+
+} // namespace dlf
+```
+
+### Logging Macros
+
+The framework provides convenience macros for logging at different levels:
+
+```cpp
+// Log at TRACE level
+DLF_LOG_TRACE(...)
+
+// Log at DEBUG level
+DLF_LOG_DEBUG(...)
+
+// Log at INFO level
+DLF_LOG_INFO(...)
+
+// Log at WARN level
+DLF_LOG_WARN(...)
+
+// Log at ERROR level
+DLF_LOG_ERROR(...)
+
+// Log at CRITICAL level
+DLF_LOG_CRITICAL(...)
+```
+
+Each macro supports:
+- String formatting using `{}` placeholders
+- Multiple arguments
+- Automatic source location tracking
+
+### Example Usage
+
+```cpp
+#include <utils/logger.hpp>
+
+// Initialize the logger
+dlf::Logger::getInstance().initialize("my_log_file.log");
+
+// Log a simple message
+DLF_LOG_INFO("Starting application");
+
+// Log with formatting
+int value = 42;
+DLF_LOG_INFO("The answer is {}", value);
+
+// Log with multiple arguments
+DLF_LOG_DEBUG("Tensor shape: {}x{}", rows, cols);
+
+// Log an error
+DLF_LOG_ERROR("Failed to load model: {}", error_message);
+
+// Ensure logs are written to disk
+dlf::Logger::getInstance().flush();
+```
+
+### Log Format
+
+The default log format is:
+```
+[timestamp] [level] [file:line] message
+```
+
+Where:
+- `timestamp`: ISO 8601 format with milliseconds
+- `level`: Log level (trace, debug, info, warn, error, critical)
+- `file:line`: Source file and line number
+- `message`: The actual log message
+
+Example:
+```
+[2024-04-08 09:33:30.220] [info] [main.cc:42] Application started
+```
+
+### Configuration
+
+The logger can be configured with different patterns for console and file output:
+
+```cpp
+// Console sink (colorized)
+console_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v");
+
+// File sink
+file_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v");
+```
+
+Pattern placeholders:
+- `%Y-%m-%d %H:%M:%S.%e`: Timestamp
+- `%l`: Log level
+- `%s:%#`: Source file and line number
+- `%v`: Message
+- `%^` and `%$`: Color range (console only)
+
+## Tensor Operations
+
 [Back to Home](index.html) 
