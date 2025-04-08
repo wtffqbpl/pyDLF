@@ -71,6 +71,7 @@ TEST_F(LoggerTest, LogLevels) {
     DLF_LOG_INFO("Info message");
     DLF_LOG_WARN("Warning message");
 
+    // Flush the logger to ensure the message is written to the file
     dlf::Logger::getInstance().flush();
     
     // Read the log file and verify the messages
@@ -110,6 +111,7 @@ TEST_F(LoggerTest, LogPattern) {
     // Test that the log pattern is correct
     DLF_LOG_INFO("Test pattern");
 
+    // Flush the logger to ensure the message is written to the file
     dlf::Logger::getInstance().flush();
     
     std::ifstream log_file(test_log_file_);

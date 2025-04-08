@@ -11,54 +11,53 @@ namespace dlf {
 
 class Logger {
 public:
-    static Logger& getInstance() {
-        static Logger instance;
-        return instance;
+  static Logger& getInstance() {
+    static Logger instance;
+    return instance;
+  }
+
+  void initialize(const std::string& log_file = "dlf.log") {
+    try {
+      // Create console sink
+      auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+      console_sink->set_level(spdlog::level::info);
+      console_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v");
+
+      // Create file sink
+      auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file, true);
+      file_sink->set_level(spdlog::level::debug);
+      file_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v");
+
+      // Create logger with both sinks
+      logger_ = std::make_shared<spdlog::logger>("dlf", spdlog::sinks_init_list{console_sink, file_sink});
+      logger_->set_level(spdlog::level::debug);
+      logger_->flush_on(spdlog::level::err);
+      logger_->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v");
+      logger_->enable_backtrace(32);  // Enable backtrace for source location
+
+      // Register as default logger
+      spdlog::set_default_logger(logger_);
+    } catch (const spdlog::spdlog_ex& ex) {
+      std::cerr << "Log initialization failed: " << ex.what() << std::endl;
     }
+  }
 
-    void initialize(const std::string& log_file = "dlf.log") {
-        try {
-            // Create console sink
-            auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-            console_sink->set_level(spdlog::level::info);
-            console_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v");
+  void flush() {
+    if (logger_)
+      logger_->flush();
+  }
 
-            // Create file sink
-            auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file, true);
-            file_sink->set_level(spdlog::level::debug);
-            file_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v");
-
-            // Create logger with both sinks
-            logger_ = std::make_shared<spdlog::logger>("dlf", spdlog::sinks_init_list{console_sink, file_sink});
-            logger_->set_level(spdlog::level::debug);
-            logger_->flush_on(spdlog::level::err);
-            logger_->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v");
-            logger_->enable_backtrace(32);  // Enable backtrace for source location
-
-            // Register as default logger
-            spdlog::set_default_logger(logger_);
-        } catch (const spdlog::spdlog_ex& ex) {
-            std::cerr << "Log initialization failed: " << ex.what() << std::endl;
-        }
-    }
-
-    void flush() {
-        if (logger_) {
-            logger_->flush();
-        }
-    }
-
-    [[nodiscard]] std::shared_ptr<spdlog::logger> getLogger() const {
-        return logger_;
-    }
+  [[nodiscard]] std::shared_ptr<spdlog::logger> getLogger() const {
+    return logger_;
+  }
 
   Logger(const Logger&) = delete;
   Logger& operator=(const Logger&) = delete;
 
 private:
-    Logger() = default;
-    ~Logger() = default;
-    std::shared_ptr<spdlog::logger> logger_;
+  Logger() = default;
+  ~Logger() = default;
+  std::shared_ptr<spdlog::logger> logger_;
 };
 
 // Convenience macros for logging

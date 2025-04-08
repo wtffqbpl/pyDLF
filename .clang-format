@@ -1,0 +1,30 @@
+Language: Cpp
+BasedOnStyle: Google
+ColumnLimit: 100
+AlignConsecutiveDeclarations: true
+AlignConsecutiveMacros: true
+AlignConsecutiveAssignments: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+TabWidth: 2
+UseTab: Never
+BreakBeforeBraces: Linux
+BreakBeforeTernaryOperators: true
+IndentWidth: 2
+MaxEmptyLinesToKeep: 1
+SortIncludes: CaseInsensitive
+PointerAlignment: Right
+
+BraceWrapping:
+    AfterClass: true
+    AfterNamespace: true
+    AfterStruct: true
+    AfterUnion: true
+    AfterExternBlock: true
+    BeforeCatch: true
+    BeforeElse: true
+    BeforeLambdaBody: true
+    IndentBraces: false
+    SplitEmptyFunction: false
+    SplitEmptyRecord: false
