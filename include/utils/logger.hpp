@@ -52,12 +52,12 @@ public:
         return logger_;
     }
 
+  Logger(const Logger&) = delete;
+  Logger& operator=(const Logger&) = delete;
+
 private:
     Logger() = default;
     ~Logger() = default;
-    Logger(const Logger&) = delete;
-    Logger& operator=(const Logger&) = delete;
-
     std::shared_ptr<spdlog::logger> logger_;
 };
 

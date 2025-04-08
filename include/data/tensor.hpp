@@ -3,8 +3,12 @@
 #include <armadillo>
 // #include <glog/logging.h>
 #include <iostream>
+#include <format>
 #include <memory>
 #include <numeric>
+#include <string>
+#include <sstream>
+#include <stdexcept>
 #include <vector>
 
 namespace dlf {
@@ -125,6 +129,22 @@ public:
     return *this;
   }
 
+  bool operator==(const Tensor<T, N> &other) const {
+    if (shape_ != other.shape_) {
+      return false;
+    }
+    size_t size =
+        std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<>());
+    for (size_t i = 0; i < size; ++i) {
+      if (data_[i] != other.data_[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  [[nodiscard]] size_t dim() const { return shape_.size(); }
+
   [[nodiscard]] const std::vector<size_t> &shape() const { return shape_; }
 
   [[nodiscard]] size_t size() const {
@@ -143,6 +163,42 @@ public:
   auto operator[](std::size_t idx) const {
     return TensorRef<T, N, 1>(data_.get(), shape_, idx * stride(0));
   }
+
+  template<typename... Indices>
+  T& at(Indices... indices) {
+    static_assert(sizeof...(Indices) == N, "Number of indices must match tensor rank");
+    size_t idx = get_flat_index(indices...);
+    return data_[idx];
+  }
+
+  template<typename... Indices>
+  T& at(Indices... indices) const {
+    static_assert(sizeof...(Indices) == N, "Number of indices must match tensor rank");
+    size_t idx = get_flat_index(indices...);
+    return data_[idx];
+  }
+
+private:
+  template<typename... Indices>
+  size_t get_flat_index(Indices... indices) const {
+    std::array<size_t, N> index_array{static_cast<size_t>(indices)...};
+    size_t flat_index = 0;
+    size_t stride = 1;
+
+    // Row-major order means that the last dimension changes the fastest
+    for (int i = N - 1; i >= 0; --i) {
+      if (index_array[i] >= shape_[i]) {
+        throw std::out_of_range("Index out of range");
+      }
+
+      flat_index += index_array[i] * stride;
+      stride *= shape_[i];
+    }
+    return flat_index;
+  }
+
+public:
+
 
   template <typename U> Tensor<U> cast() const {
     Tensor<U> result(shape_);
@@ -172,7 +228,7 @@ public:
     return strides_info[dim];
   }
 
-  [[nodiscard]] bool empty() const { return size() == 0; }
+  [[nodiscard]] bool empty() const { return data_ == nullptr || size() == 0; }
 
   [[nodiscard]] std::vector<std::size_t> strides() const {
     std::vector<std::size_t> strides(shape_.size());
@@ -194,7 +250,7 @@ public:
   void reshape(const std::vector<size_t> &new_shape) {
     size_t new_size = std::accumulate(new_shape.begin(), new_shape.end(), 1, std::multiplies<>());
     if (new_size != size()) {
-      throw std::runtime_error("Invalid reshape: incompatible sizes");
+      throw std::invalid_argument("Invalid reshape: incompatible sizes");
     }
     shape_ = new_shape;
   }
@@ -205,6 +261,79 @@ public:
       auto res = func(data_[i]);
       data_[i] = func(data_[i]);
     }
+  }
+
+  [[nodiscard]] std::string serialize() const {
+    std::string shape_str;
+    for (size_t i = 0; i < shape_.size(); ++i) {
+      shape_str += std::format("{}", shape_[i]);
+      if (i < shape_.size() - 1) {
+        shape_str += ", ";
+      }
+    }
+
+    std::string data_str;
+    for (size_t i = 0; i < this->size(); ++i) {
+      data_str += std::format(" {}", data_[i]);
+    }
+
+    return std::format("Tensor: ({}) data: {}",
+                       shape_str, data_str);
+  }
+
+  static Tensor<T, N> deserialize(const std::string &str) {
+    // This example uses std::istringstream for simple tokenization.
+    // In production code you might want better error checking and robust parsing.
+    std::istringstream iss(str);
+    std::string header;
+    iss >> header;
+    if (header != "Tensor:") {
+      throw std::runtime_error("Invalid tensor string: missing header");
+    }
+
+    // Read shape: expecting a list enclosed by parentheses.
+    char ch;
+    if (!(iss >> ch) || ch != '(') {
+      throw std::runtime_error("Invalid format: expected '('");
+    }
+
+    std::vector<size_t> shape;
+    while (iss >> ch && ch != ')') {
+      iss.putback(ch);
+      size_t dim;
+      iss >> dim;
+      shape.push_back(dim);
+
+      // Consume delimiter if any
+      iss >> ch;
+      if (ch != ',' && ch != ')') {
+        throw std::runtime_error("Expected ',' or ')' in shape list");
+      }
+      if (ch == ')') {
+        break;
+      }
+    }
+
+    // Read the remaining token "data:"
+    std::string dataLabel;
+    iss >> dataLabel;
+    if (dataLabel != "data:") {
+      throw std::runtime_error("Invalid tensor string: missing data label");
+    }
+
+    // Now read the data values. Assume that tensor expects exactly shape product elements.
+    size_t expectedSize = 1;
+    for (auto s : shape) {
+      expectedSize *= s;
+    }
+    std::vector<T> data(expectedSize);
+    for (size_t i = 0; i < expectedSize; ++i) {
+      if (!(iss >> data[i])) {
+        throw std::runtime_error("Not enough data values in tensor string");
+      }
+    }
+
+    return Tensor<T, N>(shape, data);
   }
 
   friend std::ostream &operator<<(std::ostream &os, const Tensor<T, N> &tensor) {
