@@ -16,21 +16,33 @@ public:
   T *data_;
   const std::vector<size_t> &shape_;
   std::size_t offset_;
+  std::size_t numel_;
 
   explicit TensorRef(T *data, const std::vector<size_t> &shape, std::size_t offset = 0)
       : data_(data)
       , shape_(shape)
       , offset_(offset)
+      , numel_(std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<>()))
   {}
 
   // Access operator recursively
   auto operator[](std::size_t idx) {
+    // Check if index is out of range
+    if (idx >= shape_[Dim]) {
+      throw std::out_of_range("Index out of range");
+    }
+
     // Calculate stride for current dimension
     std::size_t stride = 1;
     for (std::size_t i = Dim + 1; i < shape_.size(); ++i) {
       stride *= shape_[i];
     }
     std::size_t new_offset = offset_ + idx * stride;
+
+    // Check if new offset is out of range
+    if (new_offset >= numel_) {
+      throw std::out_of_range("Index out of range");
+    }
 
     if constexpr (Dim + 1 < N) {
       return TensorRef<T, N, Dim + 1>(data_, shape_, new_offset);

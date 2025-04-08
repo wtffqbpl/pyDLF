@@ -28,9 +28,16 @@ FetchContent_Declare(
         GIT_SHALLOW TRUE
 )
 
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG v1.12.0
+        GIT_SHALLOW TRUE
+)
+
 # For Windows: Prevent overriding the parent project's compiler/linker settings.
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+FetchContent_MakeAvailable(googletest spdlog)
 
 enable_testing()
 
@@ -41,6 +48,9 @@ find_package(Armadillo REQUIRED)
 set(link_math_lib ${ARMADILLO_LIBRARIES})
 
 set(dlf_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+
+# Add spdlog include directory
+include_directories(${spdlog_SOURCE_DIR}/include)
 
 add_subdirectory(src)
 add_subdirectory(tests)

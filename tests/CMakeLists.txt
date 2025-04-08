@@ -12,12 +12,15 @@ target_include_directories(pydlf_test
     PRIVATE
         ${ARMADILLO_INCLUDE_DIR}
         ${dlf_INCLUDE_DIR}
+        ${dlf_INCLUDE_DIR}/utils
+        ${spdlog_SOURCE_DIR}/include
 )
 
 enable_testing()
 
 target_link_libraries(pydlf_test PRIVATE
         dlf
-        GTest::gtest_main)
+        GTest::gtest_main
+        spdlog::spdlog)
 
 gtest_discover_tests(pydlf_test)
