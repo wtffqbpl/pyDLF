@@ -1,42 +1,48 @@
 #pragma once
 
-#include "tensor.h"
-#include <tuple>
-#include <sstream>
 #include <algorithm>
+#include <sstream>
+#include <tuple>
+#include "tensor.h"
 
-namespace dlf {
+namespace dlf
+{
 
 // TensorView implementation
-template<typename T>
+template <typename T>
 TensorView<T>::TensorView(Tensor<T>& tensor, size_t index)
-    : tensor_(tensor), indices_(), is_const_(false) {
+    : tensor_(tensor), indices_(), is_const_(false)
+{
     validate_index(index);
     indices_.push_back(index);
     remaining_shape_ = std::vector<size_t>(tensor.shape().begin() + 1, tensor.shape().end());
 }
 
-template<typename T>
+template <typename T>
 TensorView<T>::TensorView(const Tensor<T>& tensor, size_t index)
-    : tensor_(const_cast<Tensor<T>&>(tensor)), indices_(), is_const_(true) {
+    : tensor_(const_cast<Tensor<T>&>(tensor)), indices_(), is_const_(true)
+{
     validate_index(index);
     indices_.push_back(index);
     remaining_shape_ = std::vector<size_t>(tensor.shape().begin() + 1, tensor.shape().end());
 }
 
-template<typename T>
+template <typename T>
 TensorView<T>::TensorView(Tensor<T>& tensor, const std::vector<size_t>& indices)
-    : tensor_(tensor), indices_(indices), is_const_(false) {
+    : tensor_(tensor), indices_(indices), is_const_(false)
+{
     for (size_t i = 0; i < indices.size(); ++i) {
         if (i >= tensor.shape().size() || indices[i] >= tensor.shape()[i]) {
             throw std::out_of_range("Index out of range");
         }
     }
-    remaining_shape_ = std::vector<size_t>(tensor.shape().begin() + indices.size(), tensor.shape().end());
+    remaining_shape_ =
+        std::vector<size_t>(tensor.shape().begin() + indices.size(), tensor.shape().end());
 }
 
-template<typename T>
-T& TensorView<T>::operator[](size_t index) {
+template <typename T>
+T& TensorView<T>::operator[](size_t index)
+{
     if (is_const_) {
         throw std::runtime_error("Cannot modify const tensor view");
     }
@@ -49,8 +55,9 @@ T& TensorView<T>::operator[](size_t index) {
     return *(new TensorView<T>(tensor_, new_indices));
 }
 
-template<typename T>
-const T& TensorView<T>::operator[](size_t index) const {
+template <typename T>
+const T& TensorView<T>::operator[](size_t index) const
+{
     validate_index(index);
     auto new_indices = indices_;
     new_indices.push_back(index);
@@ -60,8 +67,9 @@ const T& TensorView<T>::operator[](size_t index) const {
     return *(new TensorView<T>(tensor_, new_indices));
 }
 
-template<typename T>
-T& TensorView<T>::at(const std::vector<size_t>& indices) {
+template <typename T>
+T& TensorView<T>::at(const std::vector<size_t>& indices)
+{
     if (is_const_) {
         throw std::runtime_error("Cannot modify const tensor view");
     }
@@ -73,8 +81,9 @@ T& TensorView<T>::at(const std::vector<size_t>& indices) {
     return tensor_.at(new_indices);
 }
 
-template<typename T>
-const T& TensorView<T>::at(const std::vector<size_t>& indices) const {
+template <typename T>
+const T& TensorView<T>::at(const std::vector<size_t>& indices) const
+{
     if (indices.size() != remaining_shape_.size()) {
         throw std::invalid_argument("Number of indices must match remaining dimensions");
     }
@@ -83,8 +92,9 @@ const T& TensorView<T>::at(const std::vector<size_t>& indices) const {
     return tensor_.at(new_indices);
 }
 
-template<typename T>
-TensorView<T> TensorView<T>::view(size_t index) {
+template <typename T>
+TensorView<T> TensorView<T>::view(size_t index)
+{
     if (is_const_) {
         throw std::runtime_error("Cannot modify a const TensorView");
     }
@@ -94,16 +104,18 @@ TensorView<T> TensorView<T>::view(size_t index) {
     return TensorView<T>(tensor_, new_indices);
 }
 
-template<typename T>
-const TensorView<T> TensorView<T>::view(size_t index) const {
+template <typename T>
+const TensorView<T> TensorView<T>::view(size_t index) const
+{
     validate_index(index);
     auto new_indices = indices_;
     new_indices.push_back(index);
     return TensorView<T>(tensor_, new_indices);
 }
 
-template<typename T>
-void TensorView<T>::validate_index(size_t index) const {
+template <typename T>
+void TensorView<T>::validate_index(size_t index) const
+{
     if (indices_.size() >= tensor_.shape().size()) {
         throw std::out_of_range("Index out of range: tensor view has no more dimensions");
     }
@@ -112,10 +124,11 @@ void TensorView<T>::validate_index(size_t index) const {
     }
 }
 
-template<typename T>
-size_t TensorView<T>::calculate_index() const {
+template <typename T>
+size_t TensorView<T>::calculate_index() const
+{
     std::vector<size_t> strides = tensor_.strides();
-    size_t index = 0;
+    size_t              index   = 0;
     for (size_t i = 0; i < indices_.size(); ++i) {
         index += indices_[i] * strides[i];
     }
@@ -123,9 +136,9 @@ size_t TensorView<T>::calculate_index() const {
 }
 
 // Tensor implementation
-template<typename T>
-Tensor<T>::Tensor(const std::vector<size_t>& shape, const std::vector<T>& data)
-    : shape_(shape) {
+template <typename T>
+Tensor<T>::Tensor(const std::vector<size_t>& shape, const std::vector<T>& data) : shape_(shape)
+{
     validate_shape(shape);
     size_t total_size = calculate_size(shape);
     if (data.empty()) {
@@ -137,17 +150,18 @@ Tensor<T>::Tensor(const std::vector<size_t>& shape, const std::vector<T>& data)
     }
 }
 
-template<typename T>
-Tensor<T>::Tensor(const std::vector<size_t>& shape, const T& value)
-    : shape_(shape) {
+template <typename T>
+Tensor<T>::Tensor(const std::vector<size_t>& shape, const T& value) : shape_(shape)
+{
     validate_shape(shape);
     data_.resize(calculate_size(shape), value);
 }
 
-template<typename T>
-std::vector<size_t> Tensor<T>::strides() const {
+template <typename T>
+std::vector<size_t> Tensor<T>::strides() const
+{
     std::vector<size_t> strides(shape_.size());
-    size_t stride = 1;
+    size_t              stride = 1;
     for (int i = shape_.size() - 1; i >= 0; --i) {
         strides[i] = stride;
         stride *= shape_[i];
@@ -155,64 +169,73 @@ std::vector<size_t> Tensor<T>::strides() const {
     return strides;
 }
 
-template<typename T>
-T& Tensor<T>::operator[](size_t index) {
+template <typename T>
+T& Tensor<T>::operator[](size_t index)
+{
     if (index >= data_.size()) {
         throw std::out_of_range("Index out of bounds");
     }
     return data_[index];
 }
 
-template<typename T>
-const T& Tensor<T>::operator[](size_t index) const {
+template <typename T>
+const T& Tensor<T>::operator[](size_t index) const
+{
     if (index >= data_.size()) {
         throw std::out_of_range("Index out of bounds");
     }
     return data_[index];
 }
 
-template<typename T>
-TensorView<T> Tensor<T>::view(size_t index) {
+template <typename T>
+TensorView<T> Tensor<T>::view(size_t index)
+{
     return TensorView<T>(*this, index);
 }
 
-template<typename T>
-const TensorView<T> Tensor<T>::view(size_t index) const {
+template <typename T>
+const TensorView<T> Tensor<T>::view(size_t index) const
+{
     return TensorView<T>(*this, index);
 }
 
-template<typename T>
-T& Tensor<T>::at(const std::vector<size_t>& indices) {
+template <typename T>
+T& Tensor<T>::at(const std::vector<size_t>& indices)
+{
     validate_indices(indices);
     return data_[calculate_index(indices)];
 }
 
-template<typename T>
-const T& Tensor<T>::at(const std::vector<size_t>& indices) const {
+template <typename T>
+const T& Tensor<T>::at(const std::vector<size_t>& indices) const
+{
     validate_indices(indices);
     return data_[calculate_index(indices)];
 }
 
-template<typename T>
-template<typename... Args>
-T& Tensor<T>::operator()(Args... indices) {
+template <typename T>
+template <typename... Args>
+T& Tensor<T>::operator()(Args... indices)
+{
     std::vector<size_t> index_vec = {static_cast<size_t>(indices)...};
     validate_indices(index_vec);
     size_t flat_index = calculate_index(index_vec);
     return data_[flat_index];
 }
 
-template<typename T>
-template<typename... Args>
-const T& Tensor<T>::operator()(Args... indices) const {
+template <typename T>
+template <typename... Args>
+const T& Tensor<T>::operator()(Args... indices) const
+{
     std::vector<size_t> index_vec = {static_cast<size_t>(indices)...};
     validate_indices(index_vec);
     size_t flat_index = calculate_index(index_vec);
     return data_[flat_index];
 }
 
-template<typename T>
-void Tensor<T>::reshape(const std::vector<size_t>& new_shape) {
+template <typename T>
+void Tensor<T>::reshape(const std::vector<size_t>& new_shape)
+{
     validate_shape(new_shape);
     if (calculate_size(new_shape) != data_.size()) {
         throw std::invalid_argument("New shape must have same total size");
@@ -220,17 +243,19 @@ void Tensor<T>::reshape(const std::vector<size_t>& new_shape) {
     shape_ = new_shape;
 }
 
-template<typename T>
-void Tensor<T>::transform(std::function<T(const T&)> func) {
+template <typename T>
+void Tensor<T>::transform(std::function<T(const T&)> func)
+{
     std::transform(data_.begin(), data_.end(), data_.begin(), func);
 }
 
-template<typename T>
-std::vector<size_t> Tensor<T>::permute(const std::vector<size_t>& permutation) {
+template <typename T>
+std::vector<size_t> Tensor<T>::permute(const std::vector<size_t>& permutation)
+{
     if (permutation.size() != shape_.size()) {
         throw std::invalid_argument("Permutation size must match tensor dimensions");
     }
-    
+
     std::vector<bool> used(shape_.size(), false);
     for (size_t p : permutation) {
         if (p >= shape_.size() || used[p]) {
@@ -238,28 +263,31 @@ std::vector<size_t> Tensor<T>::permute(const std::vector<size_t>& permutation) {
         }
         used[p] = true;
     }
-    
+
     std::vector<size_t> new_shape(shape_.size());
     for (size_t i = 0; i < shape_.size(); ++i) {
         new_shape[i] = shape_[permutation[i]];
     }
-    
+
     shape_ = new_shape;
     return shape_;
 }
 
-template<typename T>
-bool Tensor<T>::operator==(const Tensor& other) const {
+template <typename T>
+bool Tensor<T>::operator==(const Tensor& other) const
+{
     return shape_ == other.shape_ && data_ == other.data_;
 }
 
-template<typename T>
-bool Tensor<T>::operator!=(const Tensor& other) const {
+template <typename T>
+bool Tensor<T>::operator!=(const Tensor& other) const
+{
     return !(*this == other);
 }
 
-template<typename T>
-std::string Tensor<T>::serialize() const {
+template <typename T>
+std::string Tensor<T>::serialize() const
+{
     std::stringstream ss;
     ss << shape_.size() << " ";
     for (size_t dim : shape_) {
@@ -271,28 +299,30 @@ std::string Tensor<T>::serialize() const {
     return ss.str();
 }
 
-template<typename T>
-Tensor<T> Tensor<T>::deserialize(const std::string& str) {
+template <typename T>
+Tensor<T> Tensor<T>::deserialize(const std::string& str)
+{
     std::stringstream ss(str);
-    size_t dims;
+    size_t            dims;
     ss >> dims;
-    
+
     std::vector<size_t> shape(dims);
     for (size_t i = 0; i < dims; ++i) {
         ss >> shape[i];
     }
-    
+
     std::vector<T> data;
-    T value;
+    T              value;
     while (ss >> value) {
         data.push_back(value);
     }
-    
+
     return Tensor(shape, data);
 }
 
-template<typename T>
-size_t Tensor<T>::calculate_size(const std::vector<size_t>& shape) const {
+template <typename T>
+size_t Tensor<T>::calculate_size(const std::vector<size_t>& shape) const
+{
     size_t size = 1;
     for (size_t dim : shape) {
         size *= dim;
@@ -300,8 +330,9 @@ size_t Tensor<T>::calculate_size(const std::vector<size_t>& shape) const {
     return size;
 }
 
-template<typename T>
-void Tensor<T>::validate_shape(const std::vector<size_t>& shape) const {
+template <typename T>
+void Tensor<T>::validate_shape(const std::vector<size_t>& shape) const
+{
     if (shape.empty()) {
         throw std::invalid_argument("Shape cannot be empty");
     }
@@ -312,9 +343,10 @@ void Tensor<T>::validate_shape(const std::vector<size_t>& shape) const {
     }
 }
 
-template<typename T>
-size_t Tensor<T>::calculate_index(const std::vector<size_t>& indices) const {
-    size_t index = 0;
+template <typename T>
+size_t Tensor<T>::calculate_index(const std::vector<size_t>& indices) const
+{
+    size_t index  = 0;
     size_t stride = 1;
     for (int i = indices.size() - 1; i >= 0; --i) {
         index += indices[i] * stride;
@@ -323,8 +355,9 @@ size_t Tensor<T>::calculate_index(const std::vector<size_t>& indices) const {
     return index;
 }
 
-template<typename T>
-void Tensor<T>::validate_indices(const std::vector<size_t>& indices) const {
+template <typename T>
+void Tensor<T>::validate_indices(const std::vector<size_t>& indices) const
+{
     if (indices.size() != shape_.size()) {
         throw std::invalid_argument("Number of indices must match tensor dimensions");
     }
@@ -335,4 +368,4 @@ void Tensor<T>::validate_indices(const std::vector<size_t>& indices) const {
     }
 }
 
-} // namespace dlf 
+}  // namespace dlf

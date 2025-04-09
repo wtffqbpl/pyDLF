@@ -21,7 +21,8 @@ jobs:
       run: |
         cmake -B ${{github.workspace}}/build \
           -DCMAKE_BUILD_TYPE=Debug \
-          -DCMAKE_CXX_FLAGS="--coverage"
+          -DCMAKE_CXX_FLAGS="--coverage -O0 -g" \
+          -DCMAKE_C_FLAGS="--coverage -O0 -g"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build
@@ -32,12 +33,23 @@ jobs:
 
     - name: Generate coverage report
       run: |
-        lcov --capture --directory . --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' --output-file coverage.info
-        lcov --list coverage.info
+        cd ${{github.workspace}}/build
+        # Create lcov configuration file
+        echo "geninfo_unexecuted_blocks=1" > .lcovrc
+        echo "lcov_branch_coverage=1" >> .lcovrc
+        echo "lcov_function_coverage=1" >> .lcovrc
+        echo "lcov_exclude_line=0" >> .lcovrc
+        # Generate coverage data
+        lcov --config-file .lcovrc --capture --directory . --output-file coverage.info --ignore-errors mismatch
+        # Remove unwanted files
+        lcov --config-file .lcovrc --remove coverage.info '/usr/*' '/opt/*' '*/tests/*' '*/build/*' --output-file coverage.info
+        # List coverage information
+        lcov --config-file .lcovrc --list coverage.info
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
-        file: ./coverage.info
-        fail_ci_if_error: true 
+        file: ./build/coverage.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false 
