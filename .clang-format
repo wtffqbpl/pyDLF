@@ -4,17 +4,18 @@ ColumnLimit: 100
 AlignConsecutiveDeclarations: true
 AlignConsecutiveMacros: true
 AlignConsecutiveAssignments: true
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 TabWidth: 2
 UseTab: Never
 BreakBeforeBraces: Linux
 BreakBeforeTernaryOperators: true
-IndentWidth: 2
+IndentWidth: 4
 MaxEmptyLinesToKeep: 1
-SortIncludes: CaseInsensitive
-PointerAlignment: Right
+SortIncludes: true
+IncludeBlocks: Preserve
+PointerAlignment: Left
 
 BraceWrapping:
     AfterClass: true
@@ -28,3 +29,6 @@ BraceWrapping:
     IndentBraces: false
     SplitEmptyFunction: false
     SplitEmptyRecord: false
+
+AccessModifierOffset: -4
+DerivePointerAlignment: false
