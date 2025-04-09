@@ -1,4 +1,4 @@
-#include <data/tensor.hpp>
+#include <tensor/tensor.hpp>
 #include <utils/logger.hpp>
 
 void dummy_func() {
@@ -12,6 +12,6 @@ void dummy_func() {
     DLF_LOG_ERROR("Error message");
     
     // Example with tensor
-    dlf::Matrix<int> tensor({2, 3}, 1);
+    dlf::Tensor<int> tensor({2, 3}, 1);
     DLF_LOG_INFO("Created tensor with shape: {}x{}", tensor.shape()[0], tensor.shape()[1]);
 }
