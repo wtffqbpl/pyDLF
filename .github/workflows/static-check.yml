@@ -1,0 +1,39 @@
+name: Static Analysis
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install clang-format
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format
+
+    - name: Check clang-format
+      run: |
+        find include src tests -name "*.h" -o -name "*.hpp" -o -name "*.cc" | xargs clang-format --dry-run -Werror
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-tools
+
+    - name: Run clang-tidy
+      run: |
+        find include src tests -name "*.h" -o -name "*.hpp" -o -name "*.cc" | \
+        xargs clang-tidy \
+        -checks="-*,modernize-*,-modernize-use-trailing-return-type,readability-*,performance-*" \
+        -- -std=c++20 

@@ -21,6 +21,66 @@ y = dlf.tensor([[1, 2], [3, 4]], device="cuda")
 # Common operations
 z = x + y
 w = dlf.matmul(x, y)
+
+# Tensor views
+view = x[0]  # Get a view of the first element
+view[0] = 42  # Modify the view
+numpy_array = view.to_numpy()  # Convert view to numpy array
+```
+
+#### Tensor Class
+
+The `Tensor` class provides the main tensor functionality:
+
+```python
+class Tensor:
+    def __init__(self, shape=None, data=None, dtype=float):
+        """Initialize a tensor with optional shape and data."""
+        pass
+
+    @property
+    def shape(self):
+        """Get the shape of the tensor."""
+        pass
+
+    def __getitem__(self, key):
+        """Get a view of the tensor."""
+        pass
+
+    def __setitem__(self, key, value):
+        """Set a value in the tensor."""
+        pass
+
+    def to_numpy(self):
+        """Convert tensor to numpy array."""
+        pass
+```
+
+#### TensorView Class
+
+The `TensorView` class provides a view into a tensor without copying data:
+
+```python
+class TensorView:
+    def __init__(self, tensor_view):
+        """Initialize a view of a tensor."""
+        pass
+
+    def __getitem__(self, key):
+        """Get a value from the view."""
+        pass
+
+    def __setitem__(self, key, value):
+        """Set a value in the view."""
+        pass
+
+    def to_numpy(self):
+        """Convert view to numpy array."""
+        pass
+
+    def __float__(self):
+        """Convert scalar view to float."""
+        pass
 ```
 
 ### dlf.nn
@@ -199,5 +259,59 @@ Pattern placeholders:
 - `%^` and `%$`: Color range (console only)
 
 ## Tensor Operations
+
+### Creating Tensors
+
+```python
+# Create empty tensor
+x = dlf.tensor([])
+
+# Create tensor with shape
+x = dlf.tensor([2, 3, 4])
+
+# Create tensor with initial value
+x = dlf.tensor([2, 3, 4], 0.0)
+
+# Create tensor from numpy array
+import numpy as np
+x = dlf.tensor(np.array([[1, 2], [3, 4]]))
+```
+
+### Tensor Views
+
+Tensor views provide a way to access and modify parts of a tensor without copying data:
+
+```python
+# Create a tensor
+x = dlf.tensor([[1, 2], [3, 4]])
+
+# Get a view of the first row
+row = x[0]
+print(row.to_numpy())  # [1, 2]
+
+# Modify through the view
+row[0] = 42
+print(x.to_numpy())  # [[42, 2], [3, 4]]
+
+# Nested views
+element = x[0][0]
+print(float(element))  # 42.0
+element = 100
+print(x.to_numpy())  # [[100, 2], [3, 4]]
+```
+
+### Converting to NumPy
+
+Both `Tensor` and `TensorView` classes support conversion to NumPy arrays:
+
+```python
+# Convert tensor to numpy
+x = dlf.tensor([[1, 2], [3, 4]])
+numpy_x = x.to_numpy()
+
+# Convert view to numpy
+view = x[0]
+numpy_view = view.to_numpy()
+```
 
 [Back to Home](index.html) 

@@ -9,6 +9,8 @@ DLF is a flexible and efficient library for deep learning that provides GPU acce
 ## Features
 
 - GPU-accelerated tensor operations
+- Efficient tensor views without data copying
+- NumPy array interoperability
 - Automatic differentiation engine
 - Neural network building blocks
 - Optimizers for model training
@@ -73,6 +75,15 @@ y = dlf.tensor([5, 6, 7, 8], device="cuda")
 # Operations
 z = x + y
 print(z)  # tensor([6, 8, 10, 12], device="cuda")
+
+# Tensor views
+view = x[0]  # Get a view of the first element
+view[0] = 42  # Modify through the view
+print(x)  # tensor([42, 2, 3, 4], device="cuda")
+
+# Convert to numpy
+numpy_array = view.to_numpy()
+print(numpy_array)  # [42]
 
 # Create a simple neural network
 model = dlf.nn.Sequential(
