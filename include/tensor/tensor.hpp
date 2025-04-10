@@ -41,30 +41,27 @@ TensorView<T>::TensorView(Tensor<T>& tensor, const std::vector<size_t>& indices)
 }
 
 template <typename T>
-T& TensorView<T>::operator[](size_t index)
+TensorView<T> TensorView<T>::operator[](size_t index)
 {
-    if (is_const_) {
-        throw std::runtime_error("Cannot modify const tensor view");
-    }
     validate_index(index);
     auto new_indices = indices_;
     new_indices.push_back(index);
     if (new_indices.size() == tensor_.shape().size()) {
-        return tensor_.at(new_indices);
+        return TensorView<T>(tensor_, new_indices);
     }
-    return *(new TensorView<T>(tensor_, new_indices));
+    return TensorView<T>(tensor_, new_indices);
 }
 
 template <typename T>
-const T& TensorView<T>::operator[](size_t index) const
+const TensorView<T> TensorView<T>::operator[](size_t index) const
 {
     validate_index(index);
     auto new_indices = indices_;
     new_indices.push_back(index);
     if (new_indices.size() == tensor_.shape().size()) {
-        return tensor_.at(new_indices);
+        return TensorView<T>(tensor_, new_indices);
     }
-    return *(new TensorView<T>(tensor_, new_indices));
+    return TensorView<T>(tensor_, new_indices);
 }
 
 template <typename T>
@@ -141,8 +138,9 @@ Tensor<T>::Tensor(const std::vector<size_t>& shape, const std::vector<T>& data) 
 {
     validate_shape(shape);
     size_t total_size = calculate_size(shape);
+    data_.reserve(total_size);
     if (data.empty()) {
-        data_.resize(total_size);
+        data_.resize(total_size, T());
     } else if (data.size() == total_size) {
         data_ = data;
     } else {
@@ -154,7 +152,9 @@ template <typename T>
 Tensor<T>::Tensor(const std::vector<size_t>& shape, const T& value) : shape_(shape)
 {
     validate_shape(shape);
-    data_.resize(calculate_size(shape), value);
+    size_t total_size = calculate_size(shape);
+    data_.reserve(total_size);
+    data_.resize(total_size, value);
 }
 
 template <typename T>
@@ -323,6 +323,9 @@ Tensor<T> Tensor<T>::deserialize(const std::string& str)
 template <typename T>
 size_t Tensor<T>::calculate_size(const std::vector<size_t>& shape) const
 {
+    if (shape.empty()) {
+        return 0;
+    }
     size_t size = 1;
     for (size_t dim : shape) {
         size *= dim;
@@ -333,12 +336,14 @@ size_t Tensor<T>::calculate_size(const std::vector<size_t>& shape) const
 template <typename T>
 void Tensor<T>::validate_shape(const std::vector<size_t>& shape) const
 {
+    // Allow empty shapes for scalar tensors
     if (shape.empty()) {
-        throw std::invalid_argument("Shape cannot be empty");
+        return;
     }
+    // Allow zero dimensions for empty tensors
     for (size_t dim : shape) {
-        if (dim == 0) {
-            throw std::invalid_argument("Shape dimensions cannot be zero");
+        if (dim < 0) {
+            throw std::invalid_argument("Shape dimensions cannot be negative");
         }
     }
 }

@@ -1,26 +1,23 @@
-file(GLOB_RECURSE pydlf_test_srcs *.cc)
+# Add C++ tests
+add_subdirectory(csrctests)
 
-include(GoogleTest)
+# Add Python tests
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 
-add_executable(pydlf_test ${pydlf_test_srcs})
+# Configure Python test directory
+set(PYTEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pytests)
 
-target_link_libraries(pydlf_test
-    PRIVATE
-        ${link_math_lib}
+# Add custom target for Python tests
+add_custom_target(pytest
+    COMMAND ${Python3_EXECUTABLE} -m pytest ${PYTEST_DIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    DEPENDS _pydlf
+    COMMENT "Running Python tests"
 )
-target_include_directories(pydlf_test
-    PRIVATE
-        ${ARMADILLO_INCLUDE_DIR}
-        ${dlf_INCLUDE_DIR}
-        ${dlf_INCLUDE_DIR}/utils
-        ${spdlog_SOURCE_DIR}/include
-)
 
-enable_testing()
-
-target_link_libraries(pydlf_test PRIVATE
-        dlf
-        GTest::gtest_main
-        spdlog::spdlog)
-
-gtest_discover_tests(pydlf_test)
+# Add Python tests to CTest
+add_test(
+    NAME pytest
+    COMMAND ${Python3_EXECUTABLE} -m pytest ${PYTEST_DIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+) 

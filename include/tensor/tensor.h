@@ -111,74 +111,60 @@ public:
     TensorView(Tensor<T>& tensor, size_t index);
     TensorView(const Tensor<T>& tensor, size_t index);
     TensorView(Tensor<T>& tensor, const std::vector<size_t>& indices);
+    TensorView(const Tensor<T>& tensor, const std::vector<size_t>& indices);
+    TensorView(const TensorView& other) : tensor_(other.tensor_), indices_(other.indices_) {}
 
-    // Element access
-    T&       operator[](size_t index);
-    const T& operator[](size_t index) const;
-    T&       at(const std::vector<size_t>& indices);
+    // Access methods
+    T& at(const std::vector<size_t>& indices);
     const T& at(const std::vector<size_t>& indices) const;
-
-    // View method for chaining
-    TensorView<T>       view(size_t index);
+    TensorView<T> view(size_t index);
     const TensorView<T> view(size_t index) const;
 
-    // Get the value at current position
-    T& get()
-    {
-        return tensor_.at(indices_);
-    }
-    const T& get() const
-    {
-        return tensor_.at(indices_);
-    }
+    // Operators
+    TensorView<T> operator[](size_t index);
+    const TensorView<T> operator[](size_t index) const;
 
-    // Get remaining dimensions
-    size_t remaining_dims() const
-    {
-        return tensor_.shape().size() - indices_.size();
-    }
+    // Value access
+    T& value() { return tensor_.at(indices_); }
+    const T& value() const { return tensor_.at(indices_); }
 
     // Implicit conversion to T
-    operator T() const
-    {
-        return get();
-    }
+    operator T() const { return value(); }
 
-    // Operator overloading for comparison
-    bool operator==(const T& other) const
-    {
-        return get() == other;
-    }
-
-    bool operator!=(const T& other) const
-    {
-        return get() != other;
-    }
-
-    bool operator==(const TensorView& other) const
-    {
-        return get() == other.get();
-    }
-
-    bool operator!=(const TensorView& other) const
-    {
-        return get() != other.get();
-    }
-
-    // Operator overloading for assignment
-    TensorView& operator=(const T& value)
-    {
-        get() = value;
+    // Assignment operators
+    TensorView& operator=(const T& value) {
+        if (is_const_) {
+            throw std::runtime_error("Cannot modify const tensor view");
+        }
+        tensor_.at(indices_) = value;
         return *this;
     }
 
-private:
-    Tensor<T>&          tensor_;
-    std::vector<size_t> indices_;
-    bool                is_const_;
-    std::vector<size_t> remaining_shape_;
+    TensorView& operator=(const TensorView& other) {
+        if (is_const_) {
+            throw std::runtime_error("Cannot modify const tensor view");
+        }
+        tensor_.at(indices_) = other.value();
+        return *this;
+    }
 
-    void   validate_index(size_t index) const;
+    // Comparison operators
+    bool operator==(const T& other) const { return value() == other; }
+    bool operator!=(const T& other) const { return value() != other; }
+    bool operator==(const TensorView& other) const { return value() == other.value(); }
+    bool operator!=(const TensorView& other) const { return value() != other.value(); }
+
+    // Getters
+    const std::vector<size_t>& shape() const { return tensor_.shape(); }
+    size_t remaining_dims() const { return tensor_.shape().size() - indices_.size(); }
+
+private:
+    Tensor<T>& tensor_;
+    std::vector<size_t> indices_;
+    std::vector<size_t> remaining_shape_;
+    bool is_const_ = false;
+
+    void validate_index(size_t index) const;
     size_t calculate_index() const;
 };
 
