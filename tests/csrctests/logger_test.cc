@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <gtest/gtest.h>
 #include <iostream>
 #include <sstream>
 #include <utils/logger.hpp>
@@ -19,7 +19,8 @@ protected:
     void TearDown() override
     {
         // Clean up the test log file
-        if (std::filesystem::exists(test_log_file_)) {
+        if (std::filesystem::exists(test_log_file_))
+        {
             std::filesystem::remove(test_log_file_);
         }
     }
@@ -44,9 +45,9 @@ TEST_F(LoggerTest, BasicLogging)
 TEST_F(LoggerTest, LogFormatting)
 {
     // Test log formatting with different types
-    int         number = 42;
-    double      pi     = 3.14159;
-    std::string text   = "test";
+    int number = 42;
+    double pi = 3.14159;
+    std::string text = "test";
 
     DLF_LOG_INFO("Number: {}, Pi: {:.2f}, Text: {}", number, pi, text);
 
@@ -58,10 +59,12 @@ TEST_F(LoggerTest, LogFormatting)
     ASSERT_TRUE(log_file.is_open()) << "Failed to open log file: " << test_log_file_;
 
     std::string line;
-    bool        found = false;
-    while (std::getline(log_file, line)) {
-        std::cout << "Checking line: " << line << std::endl;  // Debug output
-        if (line.find("Number: 42, Pi: 3.14, Text: test") != std::string::npos) {
+    bool found = false;
+    while (std::getline(log_file, line))
+    {
+        std::cout << "Checking line: " << line << std::endl; // Debug output
+        if (line.find("Number: 42, Pi: 3.14, Text: test") != std::string::npos)
+        {
             found = true;
             break;
         }
@@ -82,13 +85,14 @@ TEST_F(LoggerTest, LogLevels)
 
     // Read the log file and verify the messages
     std::ifstream log_file(test_log_file_);
-    std::string   line;
+    std::string line;
     // bool found_debug = false;
     bool found_info = false;
     bool found_warn = false;
 
-    while (std::getline(log_file, line)) {
-        std::cout << "Checking line: " << line << std::endl;  // Debug output
+    while (std::getline(log_file, line))
+    {
+        std::cout << "Checking line: " << line << std::endl; // Debug output
 
         // if (line.find("Debug message") != std::string::npos) found_debug = true;
         if (line.find("Info message") != std::string::npos)
@@ -125,7 +129,7 @@ TEST_F(LoggerTest, LogPattern)
     dlf::Logger::getInstance().flush();
 
     std::ifstream log_file(test_log_file_);
-    std::string   line;
+    std::string line;
     std::getline(log_file, line);
 
     // Print the actual log line for debugging

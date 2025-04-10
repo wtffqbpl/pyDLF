@@ -23,9 +23,9 @@ public:
     Tensor(const std::vector<size_t>& shape, const T& value);
 
     // Copy and move constructors/assignments
-    Tensor(const Tensor& other)                = default;
-    Tensor(Tensor&& other) noexcept            = default;
-    Tensor& operator=(const Tensor& other)     = default;
+    Tensor(const Tensor& other) = default;
+    Tensor(Tensor&& other) noexcept = default;
+    Tensor& operator=(const Tensor& other) = default;
     Tensor& operator=(Tensor&& other) noexcept = default;
 
     // Getters
@@ -54,15 +54,15 @@ public:
     std::vector<size_t> strides() const;
 
     // Element access
-    T&       operator[](size_t index);
+    T& operator[](size_t index);
     const T& operator[](size_t index) const;
 
     // Multi-dimensional access
-    TensorView<T>       view(size_t index);
+    TensorView<T> view(size_t index);
     const TensorView<T> view(size_t index) const;
 
     // Convenience method for at()
-    T&       at(const std::vector<size_t>& indices);
+    T& at(const std::vector<size_t>& indices);
     const T& at(const std::vector<size_t>& indices) const;
 
     // Function call operator for multi-dimensional access
@@ -86,17 +86,17 @@ public:
     bool operator!=(const Tensor& other) const;
 
     // Serialization
-    std::string   serialize() const;
+    std::string serialize() const;
     static Tensor deserialize(const std::string& str);
 
 private:
     std::vector<size_t> shape_;
-    std::vector<T>      data_;
+    std::vector<T> data_;
 
     size_t calculate_size(const std::vector<size_t>& shape) const;
-    void   validate_shape(const std::vector<size_t>& shape) const;
+    void validate_shape(const std::vector<size_t>& shape) const;
     size_t calculate_index(const std::vector<size_t>& indices) const;
-    void   validate_indices(const std::vector<size_t>& indices) const;
+    void validate_indices(const std::vector<size_t>& indices) const;
 
     // Friend declaration for TensorView
     friend class TensorView<T>;
@@ -112,7 +112,9 @@ public:
     TensorView(const Tensor<T>& tensor, size_t index);
     TensorView(Tensor<T>& tensor, const std::vector<size_t>& indices);
     TensorView(const Tensor<T>& tensor, const std::vector<size_t>& indices);
-    TensorView(const TensorView& other) : tensor_(other.tensor_), indices_(other.indices_) {}
+    TensorView(const TensorView& other) : tensor_(other.tensor_), indices_(other.indices_)
+    {
+    }
 
     // Access methods
     T& at(const std::vector<size_t>& indices);
@@ -125,23 +127,36 @@ public:
     const TensorView<T> operator[](size_t index) const;
 
     // Value access
-    T& value() { return tensor_.at(indices_); }
-    const T& value() const { return tensor_.at(indices_); }
+    T& value()
+    {
+        return tensor_.at(indices_);
+    }
+    const T& value() const
+    {
+        return tensor_.at(indices_);
+    }
 
     // Implicit conversion to T
-    operator T() const { return value(); }
+    operator T() const
+    {
+        return value();
+    }
 
     // Assignment operators
-    TensorView& operator=(const T& value) {
-        if (is_const_) {
+    TensorView& operator=(const T& value)
+    {
+        if (is_const_)
+        {
             throw std::runtime_error("Cannot modify const tensor view");
         }
         tensor_.at(indices_) = value;
         return *this;
     }
 
-    TensorView& operator=(const TensorView& other) {
-        if (is_const_) {
+    TensorView& operator=(const TensorView& other)
+    {
+        if (is_const_)
+        {
             throw std::runtime_error("Cannot modify const tensor view");
         }
         tensor_.at(indices_) = other.value();
@@ -149,14 +164,32 @@ public:
     }
 
     // Comparison operators
-    bool operator==(const T& other) const { return value() == other; }
-    bool operator!=(const T& other) const { return value() != other; }
-    bool operator==(const TensorView& other) const { return value() == other.value(); }
-    bool operator!=(const TensorView& other) const { return value() != other.value(); }
+    bool operator==(const T& other) const
+    {
+        return value() == other;
+    }
+    bool operator!=(const T& other) const
+    {
+        return value() != other;
+    }
+    bool operator==(const TensorView& other) const
+    {
+        return value() == other.value();
+    }
+    bool operator!=(const TensorView& other) const
+    {
+        return value() != other.value();
+    }
 
     // Getters
-    const std::vector<size_t>& shape() const { return tensor_.shape(); }
-    size_t remaining_dims() const { return tensor_.shape().size() - indices_.size(); }
+    const std::vector<size_t>& shape() const
+    {
+        return tensor_.shape();
+    }
+    size_t remaining_dims() const
+    {
+        return tensor_.shape().size() - indices_.size();
+    }
 
 private:
     Tensor<T>& tensor_;
@@ -168,7 +201,7 @@ private:
     size_t calculate_index() const;
 };
 
-}  // namespace dlf
+} // namespace dlf
 
 // Template implementation
 #include "tensor/tensor.hpp"

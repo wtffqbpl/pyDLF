@@ -17,4 +17,4 @@ Tensor<T> flatten(const Tensor<T>& tensor)
     return Tensor<T>(new_shape, tensor.data());
 }
 
-}  // namespace dlf::ops
+} // namespace dlf::ops

@@ -1,6 +1,6 @@
 #include "tensor/tensor.h"
-#include <gtest/gtest.h>
 #include <chrono>
+#include <gtest/gtest.h>
 
 class TensorTest : public ::testing::Test
 {
@@ -15,13 +15,15 @@ protected:
 TEST_F(TensorTest, BasicTensorCreation)
 {
     dlf::Tensor<int> tensor({2, 3}, 1);
-    auto&            shape = tensor.shape();
+    auto& shape = tensor.shape();
     EXPECT_EQ(shape[0], 2);
     EXPECT_EQ(shape[1], 3);
 
     // Verify all elements are initialized to 1
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 3; ++j) {
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
             EXPECT_EQ(tensor.view(i).view(j), 1);
         }
     }
@@ -49,16 +51,16 @@ TEST_F(TensorTest, TensorEmpty)
 TEST_F(TensorTest, TensorStrides)
 {
     dlf::Tensor<int> tensor({2, 3}, 1);
-    auto             strides = tensor.strides();
+    auto strides = tensor.strides();
     EXPECT_EQ(strides[0], 3);
     EXPECT_EQ(strides[1], 1);
 
     // Test with 3D tensor
     dlf::Tensor<int> tensor3d({2, 3, 4}, 1);
-    auto             strides3d = tensor3d.strides();
-    EXPECT_EQ(strides3d[0], 12);  // 3 * 4
-    EXPECT_EQ(strides3d[1], 4);   // 4
-    EXPECT_EQ(strides3d[2], 1);   // 1
+    auto strides3d = tensor3d.strides();
+    EXPECT_EQ(strides3d[0], 12); // 3 * 4
+    EXPECT_EQ(strides3d[1], 4);  // 4
+    EXPECT_EQ(strides3d[2], 1);  // 1
 }
 
 // Tensor operations
@@ -80,8 +82,10 @@ TEST_F(TensorTest, TensorTransform)
     tensor.transform([](const int& x) { return x + 1; });
 
     // Verify all elements are incremented
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 3; ++j) {
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
             EXPECT_EQ(tensor.view(i).view(j), 2);
         }
     }
@@ -90,13 +94,13 @@ TEST_F(TensorTest, TensorTransform)
 TEST_F(TensorTest, TensorPermute)
 {
     dlf::Tensor<int> tensor({2, 3}, 1);
-    auto             permuted_shape = tensor.permute({1, 0});
+    auto permuted_shape = tensor.permute({1, 0});
     EXPECT_EQ(permuted_shape[0], 3);
     EXPECT_EQ(permuted_shape[1], 2);
 
     // Test with 3D tensor
     dlf::Tensor<int> tensor3d({2, 3, 4}, 1);
-    auto             permuted_shape3d = tensor3d.permute({2, 0, 1});
+    auto permuted_shape3d = tensor3d.permute({2, 0, 1});
     EXPECT_EQ(permuted_shape3d[0], 4);
     EXPECT_EQ(permuted_shape3d[1], 2);
     EXPECT_EQ(permuted_shape3d[2], 3);
@@ -116,8 +120,10 @@ TEST_F(TensorTest, TensorFloatOperations)
     dlf::Tensor<float> tensor({2, 3}, 1.0f);
     tensor.transform([](const float& x) { return x * 2.0f; });
 
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 3; ++j) {
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
             EXPECT_FLOAT_EQ(tensor.view(i).view(j), 2.0f);
         }
     }
@@ -127,11 +133,13 @@ TEST_F(TensorTest, TensorFloatOperations)
 TEST_F(TensorTest, TensorCopy)
 {
     dlf::Tensor<int> tensor1({2, 3}, 1);
-    dlf::Tensor<int> tensor2 = tensor1;  // Copy constructor
+    dlf::Tensor<int> tensor2 = tensor1; // Copy constructor
 
     // Verify both tensors have the same values
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 3; ++j) {
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
             EXPECT_EQ(tensor1.view(i).view(j), tensor2.view(i).view(j));
         }
     }
@@ -144,11 +152,13 @@ TEST_F(TensorTest, TensorCopy)
 TEST_F(TensorTest, TensorMove)
 {
     dlf::Tensor<int> tensor1({2, 3}, 1);
-    dlf::Tensor<int> tensor2 = std::move(tensor1);  // Move constructor
+    dlf::Tensor<int> tensor2 = std::move(tensor1); // Move constructor
 
     // Verify tensor2 has the original values
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 3; ++j) {
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
             EXPECT_EQ(tensor2.view(i).view(j), 1);
         }
     }
@@ -209,7 +219,7 @@ TEST_F(TensorTest, TensorSerialization)
 // Tensor performance
 TEST_F(TensorTest, TensorPerformance)
 {
-    const int        size = 100;
+    const int size = 100;
     dlf::Tensor<int> tensor({size, size}, 1);
 
     // Measure transform performance

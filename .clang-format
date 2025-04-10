@@ -1,34 +1,32 @@
 Language: Cpp
-BasedOnStyle: Google
+BasedOnStyle: LLVM
+IndentWidth: 4
 ColumnLimit: 100
-AlignConsecutiveDeclarations: true
-AlignConsecutiveMacros: true
-AlignConsecutiveAssignments: true
+AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignOperands: true
+AlignTrailingComments: true
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-TabWidth: 2
-UseTab: Never
-BreakBeforeBraces: Linux
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: true
+BinPackParameters: true
+BreakBeforeBraces: Allman
 BreakBeforeTernaryOperators: true
-IndentWidth: 4
-MaxEmptyLinesToKeep: 1
-SortIncludes: true
+BreakConstructorInitializers: BeforeComma
+CompactNamespaces: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+Cpp11BracedListStyle: true
+FixNamespaceComments: true
 IncludeBlocks: Preserve
+IndentCaseLabels: false
+NamespaceIndentation: None
 PointerAlignment: Left
-
-BraceWrapping:
-    AfterClass: true
-    AfterNamespace: true
-    AfterStruct: true
-    AfterUnion: true
-    AfterExternBlock: true
-    BeforeCatch: true
-    BeforeElse: true
-    BeforeLambdaBody: true
-    IndentBraces: false
-    SplitEmptyFunction: false
-    SplitEmptyRecord: false
-
-AccessModifierOffset: -4
-DerivePointerAlignment: false
+SortIncludes: true
+SpaceBeforeParens: ControlStatements
+Standard: c++20
+TabWidth: 4
+UseTab: Never
