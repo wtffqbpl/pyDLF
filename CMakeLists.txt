@@ -25,7 +25,12 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Find Python
 set(Python_FIND_VIRTUALENV FIRST)
+set(Python3_FIND_VIRTUALENV FIRST)
+if(DEFINED ENV{VIRTUAL_ENV})
+    set(Python3_ROOT_DIR $ENV{VIRTUAL_ENV})
+endif()
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+message(STATUS "Python3_EXECUTABLE: ${Python3_EXECUTABLE}")
 message(STATUS "Python3_INCLUDE_DIRS: ${Python3_INCLUDE_DIRS}")
 message(STATUS "Python3_LIBRARIES: ${Python3_LIBRARIES}")
 

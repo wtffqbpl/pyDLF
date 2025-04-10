@@ -64,6 +64,7 @@ public:
     // Convenience method for at()
     T& at(const std::vector<size_t>& indices);
     const T& at(const std::vector<size_t>& indices) const;
+    void set_at(const std::vector<size_t>& indices, T value);
 
     // Function call operator for multi-dimensional access
     template <typename... Args>
@@ -102,106 +103,6 @@ private:
     friend class TensorView<T>;
 };
 
-// TensorView class for nested operator[] access
-template <typename T>
-class TensorView
-{
-public:
-    // Constructors
-    TensorView(Tensor<T>& tensor, size_t index);
-    TensorView(const Tensor<T>& tensor, size_t index);
-    TensorView(Tensor<T>& tensor, const std::vector<size_t>& indices);
-    TensorView(const Tensor<T>& tensor, const std::vector<size_t>& indices);
-    TensorView(const TensorView& other) : tensor_(other.tensor_), indices_(other.indices_)
-    {
-    }
-
-    // Access methods
-    T& at(const std::vector<size_t>& indices);
-    const T& at(const std::vector<size_t>& indices) const;
-    TensorView<T> view(size_t index);
-    const TensorView<T> view(size_t index) const;
-
-    // Operators
-    TensorView<T> operator[](size_t index);
-    const TensorView<T> operator[](size_t index) const;
-
-    // Value access
-    T& value()
-    {
-        return tensor_.at(indices_);
-    }
-    const T& value() const
-    {
-        return tensor_.at(indices_);
-    }
-
-    // Implicit conversion to T
-    operator T() const
-    {
-        return value();
-    }
-
-    // Assignment operators
-    TensorView& operator=(const T& value)
-    {
-        if (is_const_)
-        {
-            throw std::runtime_error("Cannot modify const tensor view");
-        }
-        tensor_.at(indices_) = value;
-        return *this;
-    }
-
-    TensorView& operator=(const TensorView& other)
-    {
-        if (is_const_)
-        {
-            throw std::runtime_error("Cannot modify const tensor view");
-        }
-        tensor_.at(indices_) = other.value();
-        return *this;
-    }
-
-    // Comparison operators
-    bool operator==(const T& other) const
-    {
-        return value() == other;
-    }
-    bool operator!=(const T& other) const
-    {
-        return value() != other;
-    }
-    bool operator==(const TensorView& other) const
-    {
-        return value() == other.value();
-    }
-    bool operator!=(const TensorView& other) const
-    {
-        return value() != other.value();
-    }
-
-    // Getters
-    const std::vector<size_t>& shape() const
-    {
-        return tensor_.shape();
-    }
-    size_t remaining_dims() const
-    {
-        return tensor_.shape().size() - indices_.size();
-    }
-
-private:
-    Tensor<T>& tensor_;
-    std::vector<size_t> indices_;
-    std::vector<size_t> remaining_shape_;
-    bool is_const_ = false;
-
-    void validate_index(size_t index) const;
-    size_t calculate_index() const;
-};
-
 } // namespace dlf
 
-// Template implementation
 #include "tensor/tensor.hpp"

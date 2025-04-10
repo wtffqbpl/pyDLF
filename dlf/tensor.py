@@ -1,54 +1,45 @@
 """
-Tensor module for dlf
-Provides Python bindings for the C++ Tensor class
+Python wrapper for the C++ Tensor class
 """
 
-import dlf._pydlf as _dlf
 import numpy as np
+
 
 class tensor:
     """Python wrapper for the C++ Tensor class"""
-    
-    def __init__(self, shape=None, data=None, dtype=float):
+
+    def __init__(self, shape=None, data=None):
         """
         Initialize a Tensor
-        
+
         Args:
-            shape (tuple, optional): Shape of the tensor
-            data (list or numpy.ndarray, optional): Initial data
-            dtype (type, optional): Data type (float or int)
+            shape: Tuple of dimensions
+            data: List of values
         """
-        if shape is None:
-            shape = []
-        if isinstance(shape, (list, tuple)):
-            shape = list(shape)
+        from ._pydlf import Tensor
+        shape_list = list(shape) if shape else []
         
-        if data is None:
-            self._tensor = _dlf.Tensor(shape, 0.0)
-        else:
-            if isinstance(data, (list, tuple)):
-                data = np.array(data, dtype=dtype)
-            if isinstance(data, np.ndarray):
-                data = data.flatten().tolist()
-                if not data:
-                    self._tensor = _dlf.Tensor(shape, 0.0)
-                else:
-                    self._tensor = _dlf.Tensor(shape, data[0])
-                    for i, value in enumerate(data[1:], 1):
-                        indices = []
-                        remaining = i
-                        for dim in reversed(shape):
-                            indices.insert(0, remaining % dim)
-                            remaining //= dim
-                        self._tensor.set_at(indices, float(value))
-    
+        # Create empty tensor with shape
+        self._tensor = Tensor(shape_list)
+        
+        # Fill with data if provided
+        if data:
+            for idx, value in enumerate(data):
+                # Convert flat index to multi-dimensional indices
+                indices = []
+                remaining = idx
+                for dim in reversed(shape_list):
+                    indices.insert(0, remaining % dim)
+                    remaining //= dim
+                self._tensor.set_at(indices, float(value))
+
     @property
     def shape(self):
         """Get the shape of the tensor"""
         return tuple(self._tensor.shape())
-    
+
     def __getitem__(self, key):
-        """Get a view of the tensor"""
+        """Get a value from the tensor"""
         if isinstance(key, int):
             if len(self.shape) == 1:
                 return float(self._tensor.at([key]))
@@ -58,7 +49,7 @@ class tensor:
                 return float(self._tensor.at(list(key)))
             return tensor_view(self._tensor, list(key))
         raise TypeError("Invalid index type")
-    
+
     def __setitem__(self, key, value):
         """Set a value in the tensor"""
         if isinstance(key, int):
@@ -73,11 +64,11 @@ class tensor:
                 raise ValueError("Number of indices must match dimensions")
         else:
             raise TypeError("Invalid index type")
-    
+
     def __repr__(self):
         """String representation of the tensor"""
         return f"tensor(shape={self.shape})"
-    
+
     def to_numpy(self):
         """Convert tensor to numpy array"""
         data = self._tensor.data()
@@ -85,20 +76,21 @@ class tensor:
             return np.array([]).reshape(self.shape)
         return np.asarray(data).reshape(self.shape)
 
+
 class tensor_view:
     """Python wrapper for the C++ TensorView class"""
-    
+
     def __init__(self, tensor, indices):
         """
         Initialize a TensorView
-        
+
         Args:
             tensor: C++ Tensor object
             indices: List of indices
         """
         self._tensor = tensor
         self._indices = indices
-    
+
     def __getitem__(self, key):
         """Get a value from the view"""
         if isinstance(key, int):
@@ -113,9 +105,13 @@ class tensor_view:
             elif len(indices) < len(self._tensor.shape()):
                 return tensor_view(self._tensor, indices)
             else:
-                raise ValueError(f"Too many indices ({len(indices)}) for tensor with {len(self._tensor.shape())} dimensions")
+                msg = (
+                    f"Too many indices ({len(indices)}) for tensor with "
+                    f"{len(self._tensor.shape())} dimensions"
+                )
+                raise ValueError(msg)
         raise TypeError("Invalid index type")
-    
+
     def __setitem__(self, key, value):
         """Set a value in the view"""
         if isinstance(key, int):
@@ -129,14 +125,19 @@ class tensor_view:
             if len(indices) == len(self._tensor.shape()):
                 self._tensor.set_at(indices, float(value))
             else:
-                raise ValueError(f"Expected {len(self._tensor.shape()) - len(self._indices)} indices but got {len(key)}")
+                remaining = len(self._tensor.shape()) - len(self._indices)
+                msg = (
+                    f"Expected {remaining} indices but got {len(key)}"
+                )
+                raise ValueError(msg)
         else:
             raise TypeError("Invalid index type")
-    
+
     def __repr__(self):
         """String representation of the view"""
-        return f"tensor_view(indices={self._indices}, remaining_dims={len(self._tensor.shape()) - len(self._indices)})"
-    
+        dims = len(self._tensor.shape()) - len(self._indices)
+        return f"tensor_view(indices={self._indices}, remaining_dims={dims})"
+
     def __float__(self):
         """Convert to float if possible"""
         if self._view.remaining_dims() == 0:
