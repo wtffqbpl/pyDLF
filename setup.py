@@ -3,65 +3,98 @@ from setuptools.command.build_ext import build_ext
 import sys
 import os
 import subprocess
-import shutil
+import numpy as np
 
-class CMakeExtension(Extension):
-    def __init__(self, name, sourcedir=''):
-        Extension.__init__(self, name, sources=[])
-        self.sourcedir = os.path.abspath(sourcedir)
+# Get the directory containing setup.py
+setup_dir = os.path.dirname(os.path.abspath(__file__))
 
+# Define the extension module
+ext_modules = [
+    Extension(
+        "dlf._pydlf",  # Changed from dlf._dlf to match the import
+        ["src/python/dlf.cpp"],  # Changed from pydlf.cpp
+        include_dirs=[
+            os.path.join(setup_dir, "include"),
+            os.path.join(setup_dir, "include/tensor"),
+            os.path.join(setup_dir, "include/utils"),
+            np.get_include(),
+        ],
+        language="c++",
+    )
+]
+
+# Custom build command to use CMake
 class CMakeBuild(build_ext):
     def run(self):
         try:
-            subprocess.check_output(['cmake', '--version'])
+            subprocess.check_output(["cmake", "--version"])
         except OSError:
             raise RuntimeError(
-                "CMake must be installed to build the following extensions: " +
-                ", ".join(e.name for e in self.extensions))
-        
+                "CMake must be installed to build the following extensions: "
+                + ", ".join(e.name for e in self.extensions)
+            )
+
         for ext in self.extensions:
             self.build_extension(ext)
 
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        
+
+        # Configure CMake
         cmake_args = [
-            f'-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={os.path.join(extdir, "pydlf")}',
-            f'-DPYTHON_EXECUTABLE={sys.executable}',
-            f'-DPython3_ROOT_DIR={os.path.dirname(os.path.dirname(sys.executable))}',
-            f'-DPython3_EXECUTABLE={sys.executable}',
-            '-DCMAKE_BUILD_TYPE=Release'
+            "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + extdir,
+            "-DPYTHON_EXECUTABLE=" + sys.executable,
+            "-DCMAKE_BUILD_TYPE=Release",
         ]
-        
-        build_args = ['--', '-j4']
-        
+
+        build_args = ["--", "-j4"]
+
         env = os.environ.copy()
-        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(
-            env.get('CXXFLAGS', ''),
-            self.distribution.get_version())
-        
+        env["CXXFLAGS"] = '{} -DVERSION_INFO=\\"{}\\"'.format(
+            env.get("CXXFLAGS", ""), self.distribution.get_version()
+        )
+
+        # Create build directory
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
-        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, 
-                            cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] + build_args,
-                            cwd=self.build_temp)
-        
-        module_path = os.path.join(self.build_temp, 'lib', 'pydlf', '_pydlf.cpython-39-darwin.so')
-        if os.path.exists(module_path):
-            shutil.copy2(module_path, os.path.join('pydlf', '_pydlf.cpython-39-darwin.so'))
+        subprocess.check_call(
+            ["cmake", setup_dir] + cmake_args, cwd=self.build_temp, env=env
+        )
+        subprocess.check_call(
+            ["cmake", "--build", "."] + build_args, cwd=self.build_temp
+        )
+
+# Read the contents of README.md
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
 
 setup(
-    name='pydlf',
-    version='0.1.0',
-    author='Yuanjun Ren',
-    author_email='renyuanjun310@gmail.com',
-    description='A Python interface for the pyDLF C++ library',
-    long_description='',
-    ext_modules=[CMakeExtension('pydlf._pydlf')],
+    name="dlf",  # Changed from pydlf
+    version="0.1.0",
+    author="Yuanjun Ren",
+    author_email="yuanjun.ren@outlook.com",
+    description="A Python package for deep learning framework",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/yuanjunren/pyDLF",
+    packages=["dlf"],  # Changed from pydlf
+    package_dir={"dlf": "dlf"},  # Changed from pydlf
+    ext_modules=ext_modules,
     cmdclass=dict(build_ext=CMakeBuild),
-    zip_safe=False,
-    python_requires='>=3.9',
-    packages=['pydlf'],
-    package_dir={'pydlf': 'pydlf'},
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    ],
+    python_requires=">=3.9",
+    install_requires=[
+        "numpy>=1.24.0",
+        "setuptools>=42.0.0",
+        "wheel>=0.37.0",
+    ],
 ) 

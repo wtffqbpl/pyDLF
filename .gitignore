@@ -4,3 +4,4 @@ cmake-build-debug-event-trace
 .idea
 venv
 *egg-info*
+*cpython*.so

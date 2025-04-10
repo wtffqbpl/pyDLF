@@ -1,13 +1,20 @@
-set(PYTHON_MODULE_NAME _pydlf)
+# Find Python and pybind11
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 
-pybind11_add_module(${PYTHON_MODULE_NAME} MODULE pydlf.cpp)
-target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE pydlf)
-target_include_directories(${PYTHON_MODULE_NAME} PRIVATE ${Python3_INCLUDE_DIRS})
+# Set pybind11 path
+set(pybind11_DIR "${Python3_SITEPACKAGES_DIR}/pybind11/share/cmake/pybind11")
+find_package(pybind11 CONFIG REQUIRED)
 
-# Set output directory for the Python module
-set_target_properties(${PYTHON_MODULE_NAME} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/pydlf"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/pydlf"
+# Add the Python module
+pybind11_add_module(_dlf dlf.cpp)
+
+# Link against the dlf library
+target_link_libraries(_dlf PRIVATE dlf)
+
+# Set the output directory
+set_target_properties(_dlf PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
 # Copy Python package files

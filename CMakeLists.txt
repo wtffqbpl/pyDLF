@@ -109,6 +109,9 @@ FetchContent_MakeAvailable(pybind11)
 
 enable_testing()
 
+# Set Python module name
+set(PYTHON_MODULE_NAME "dlf")
+
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(tests)

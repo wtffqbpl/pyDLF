@@ -1,26 +1,26 @@
 import pytest
 import numpy as np
-import pydlf
+import dlf
 
 def test_tensor_creation():
     # Test empty tensor
-    t1 = pydlf.Tensor()
+    t1 = dlf.tensor()
     assert t1.shape == ()
     
     # Test tensor with shape
-    t2 = pydlf.Tensor((2, 3))
+    t2 = dlf.tensor((2, 3))
     assert t2.shape == (2, 3)
     
     # Test tensor with data
     data = [1, 2, 3, 4, 5, 6]
-    t3 = pydlf.Tensor((2, 3), data)
+    t3 = dlf.tensor((2, 3), data)
     assert t3.shape == (2, 3)
     assert t3[0, 0] == 1
     assert t3[1, 2] == 6
 
 def test_tensor_access():
     data = [1, 2, 3, 4, 5, 6]
-    t = pydlf.Tensor((2, 3), data)
+    t = dlf.tensor((2, 3), data)
     
     # Test single index access
     assert t[0][0] == 1
@@ -38,7 +38,7 @@ def test_tensor_access():
 
 def test_tensor_modification():
     data = [1, 2, 3, 4, 5, 6]
-    t = pydlf.Tensor((2, 3), data)
+    t = dlf.tensor((2, 3), data)
     
     # Test single index modification
     t[0][0] = 10
@@ -50,7 +50,7 @@ def test_tensor_modification():
 
 def test_tensor_view():
     data = [1, 2, 3, 4, 5, 6]
-    t = pydlf.Tensor((2, 3), data)
+    t = dlf.tensor((2, 3), data)
     
     # Test view creation
     view = t[0]
@@ -64,7 +64,7 @@ def test_tensor_view():
 
 def test_tensor_to_numpy():
     data = [1, 2, 3, 4, 5, 6]
-    t = pydlf.Tensor((2, 3), data)
+    t = dlf.tensor((2, 3), data)
     
     # Test conversion to numpy array
     arr = t.to_numpy()
@@ -72,6 +72,7 @@ def test_tensor_to_numpy():
     assert arr.shape == (2, 3)
     assert np.array_equal(arr, np.array([[1, 2, 3], [4, 5, 6]]))
     
-    # Test modification through numpy array
-    arr[0, 0] = 10
-    assert t[0, 0] == 10 
+    # Test modification through tensor interface
+    t[0, 0] = 10
+    arr = t.to_numpy()
+    assert arr[0, 0] == 10 
