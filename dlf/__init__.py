@@ -1,7 +1,7 @@
-"""Python Deep Learning Framework"""
+"""
+Python Deep Learning Framework
+"""
 
-from dlf.tensor import tensor, tensor_view
+from ._pydlf import Tensor, TensorDouble, TensorInt, TensorLong, TensorBool
 
-__version__ = "0.1.0"
-
-__all__ = ["tensor", "tensor_view"] 
+__all__ = ["Tensor", "TensorDouble", "TensorInt", "TensorLong", "TensorBool"] 

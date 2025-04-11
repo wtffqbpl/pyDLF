@@ -1,0 +1,23 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "pybind11>=2.13.0",
+    "numpy>=1.24.0",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dlf"
+version = "0.1.0"
+description = "A Python package for deep learning framework"
+readme = "README.md"
+authors = [
+    {name = "Yuanjun Ren", email = "yuanjun.ren@outlook.com"},
+]
+requires-python = ">=3.9"
+license = {text = "MIT"}
+dependencies = [
+    "numpy>=1.24.0",
+    "pybind11>=2.13.0",
+] 

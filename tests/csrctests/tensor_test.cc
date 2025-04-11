@@ -93,17 +93,26 @@ TEST_F(TensorTest, TensorTransform)
 
 TEST_F(TensorTest, TensorPermute)
 {
-    dlf::Tensor<int> tensor({2, 3}, 1);
-    auto permuted_shape = tensor.permute({1, 0});
-    EXPECT_EQ(permuted_shape[0], 3);
-    EXPECT_EQ(permuted_shape[1], 2);
+    dlf::Tensor<float> tensor({2, 3});
+    for (size_t i = 0; i < 6; ++i) {
+        tensor.at({i / 3, i % 3}) = static_cast<float>(i);
+    }
 
-    // Test with 3D tensor
-    dlf::Tensor<int> tensor3d({2, 3, 4}, 1);
-    auto permuted_shape3d = tensor3d.permute({2, 0, 1});
-    EXPECT_EQ(permuted_shape3d[0], 4);
-    EXPECT_EQ(permuted_shape3d[1], 2);
-    EXPECT_EQ(permuted_shape3d[2], 3);
+    tensor.permute({1, 0});
+    auto shape = tensor.shape();
+    EXPECT_EQ(shape[0], 3);
+    EXPECT_EQ(shape[1], 2);
+
+    dlf::Tensor<float> tensor3d({2, 3, 4});
+    for (size_t i = 0; i < 24; ++i) {
+        tensor3d.at({i / 12, (i % 12) / 4, i % 4}) = static_cast<float>(i);
+    }
+
+    tensor3d.permute({2, 0, 1});
+    auto shape3d = tensor3d.shape();
+    EXPECT_EQ(shape3d[0], 4);
+    EXPECT_EQ(shape3d[1], 2);
+    EXPECT_EQ(shape3d[2], 3);
 }
 
 // Error handling

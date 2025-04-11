@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Set visibility settings
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+
 # Set build type if not specified
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Debug")
@@ -26,9 +30,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Find Python
 set(Python_FIND_VIRTUALENV FIRST)
 set(Python3_FIND_VIRTUALENV FIRST)
-if(DEFINED ENV{VIRTUAL_ENV})
-    set(Python3_ROOT_DIR $ENV{VIRTUAL_ENV})
-endif()
+set(Python3_ROOT_DIR "${CMAKE_SOURCE_DIR}/venv")
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 message(STATUS "Python3_EXECUTABLE: ${Python3_EXECUTABLE}")
 message(STATUS "Python3_INCLUDE_DIRS: ${Python3_INCLUDE_DIRS}")
@@ -95,6 +97,14 @@ FetchContent_MakeAvailable(spdlog)
 # Add spdlog include directory after FetchContent_MakeAvailable
 include_directories(${spdlog_SOURCE_DIR}/include)
 
+# Fetch pybind11
+FetchContent_Declare(
+  pybind11
+  GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  GIT_TAG v2.13.6
+)
+FetchContent_MakeAvailable(pybind11)
+
 # Fetch and configure GoogleTest
 FetchContent_Declare(
   googletest
@@ -104,19 +114,35 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# Fetch and configure pybind11
-FetchContent_Declare(
-  pybind11
-  GIT_REPOSITORY https://github.com/pybind/pybind11.git
-  GIT_TAG v2.13.6
-)
-FetchContent_MakeAvailable(pybind11)
-
+# Enable testing
 enable_testing()
 
-# Set Python module name
-set(PYTHON_MODULE_NAME "dlf")
+# Add core library
+add_library(dlf_core SHARED
+  src/tensor/tensor.cpp
+  src/logger/logger.cpp
+)
 
-# Add subdirectories
-add_subdirectory(src)
+target_include_directories(dlf_core PUBLIC
+  ${dlf_INCLUDE_DIR}
+  ${spdlog_SOURCE_DIR}/include
+)
+
+target_link_libraries(dlf_core PUBLIC
+  spdlog::spdlog
+  ${link_math_lib}
+)
+
+# Add Python module
+pybind11_add_module(pydlf_module
+  src/python/dlf.cpp
+)
+
+target_link_libraries(pydlf_module PRIVATE
+  dlf_core
+  spdlog::spdlog
+  ${link_math_lib}
+)
+
+# Add tests
 add_subdirectory(tests)

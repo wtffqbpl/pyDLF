@@ -19,7 +19,7 @@ target_include_directories(pydlf_test
 enable_testing()
 
 target_link_libraries(pydlf_test PRIVATE
-        dlf
+        dlf_core
         GTest::gtest_main
         spdlog::spdlog)
 

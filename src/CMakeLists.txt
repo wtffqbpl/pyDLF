@@ -1,6 +1,7 @@
 set(target dlf)
 add_library(${target} SHARED 
     dummy_code.cc
+    tensor/tensor.cpp
 )
 
 target_include_directories(${target}

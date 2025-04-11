@@ -1,108 +1,117 @@
 #pragma once
 
-#include <array>
-#include <functional>
-#include <memory>
-#include <stdexcept>
-#include <string>
 #include <vector>
+#include <string>
+#include <cstdint>
+#include <functional>
+#include "device.h"
+#include "tensor_view.h"
 
-namespace dlf
-{
+namespace dlf {
 
-// Forward declaration for TensorView
+// Forward declarations
+template <typename T>
+class Tensor;
 template <typename T>
 class TensorView;
 
-template <typename T>
-class Tensor
-{
+// Specialization for bool to handle std::vector<bool> reference issues
+template<>
+class Tensor<bool> {
 public:
-    // Constructors
-    Tensor(const std::vector<size_t>& shape, const std::vector<T>& data = {});
-    Tensor(const std::vector<size_t>& shape, const T& value);
+    Tensor(const std::vector<size_t>& dims);
+    Tensor(const std::vector<size_t>& dims, const std::vector<bool>& data);
+    Tensor(const std::vector<size_t>& dims, const Device& device);
+    Tensor(const std::vector<size_t>& dims, bool value);
 
-    // Copy and move constructors/assignments
-    Tensor(const Tensor& other) = default;
-    Tensor(Tensor&& other) noexcept = default;
-    Tensor& operator=(const Tensor& other) = default;
-    Tensor& operator=(Tensor&& other) noexcept = default;
+    bool operator[](size_t index) const;
+    void set(size_t index, bool value);
+    bool at(const std::vector<size_t>& indices) const;
+    void set_at(const std::vector<size_t>& indices, bool value);
 
-    // Getters
-    const std::vector<size_t>& shape() const
-    {
-        return shape_;
-    }
-    const std::vector<T>& data() const
-    {
-        return data_;
-    }
-    std::vector<T>& data()
-    {
-        return data_;
-    }
-    size_t size() const
-    {
-        return data_.size();
-    }
-    bool empty() const
-    {
-        return data_.empty();
-    }
+    const std::vector<size_t>& shape() const;
+    const std::vector<size_t>& strides() const;
+    const std::vector<bool>& data() const;
+    size_t size() const;
+    size_t ndim() const;
+    const Device& device() const;
+    bool empty() const;
 
-    // Strides calculation
-    std::vector<size_t> strides() const;
+    void reshape(const std::vector<size_t>& new_dims);
+    void transform(const std::function<bool(bool)>& func);
+    void permute(const std::vector<size_t>& axes);
 
-    // Element access
+    bool operator==(const Tensor<bool>& other) const;
+    bool operator!=(const Tensor<bool>& other) const;
+
+    void to(Device device);
+    std::string serialize() const;
+    static Tensor<bool> deserialize(const std::string& data);
+    void deserialize(const std::vector<uint8_t>& data);
+
+    TensorView<bool> view(size_t index);
+    const TensorView<bool> view(size_t index) const;
+
+protected:
+    void calculate_strides();
+    size_t calculate_flat_index(const std::vector<size_t>& indices) const;
+
+private:
+    std::vector<size_t> dims_;
+    std::vector<size_t> strides_;
+    std::vector<bool> data_;
+    Device device_;
+};
+
+// General template
+template <typename T>
+class Tensor {
+public:
+    Tensor(const std::vector<size_t>& dims);
+    Tensor(const std::vector<size_t>& dims, const std::vector<T>& data);
+    Tensor(const std::vector<size_t>& dims, const Device& device);
+    Tensor(const std::vector<size_t>& dims, T value);
+
     T& operator[](size_t index);
     const T& operator[](size_t index) const;
+    T& at(const std::vector<size_t>& indices);
+    const T& at(const std::vector<size_t>& indices) const;
 
-    // Multi-dimensional access
+    const std::vector<size_t>& shape() const;
+    const std::vector<size_t>& strides() const;
+    const std::vector<T>& data() const;
+    std::vector<T>& data();
+    size_t size() const;
+    size_t ndim() const;
+    const Device& device() const;
+    bool empty() const;
+
+    void reshape(const std::vector<size_t>& new_dims);
+    void transform(const std::function<T(const T&)>& func);
+    void permute(const std::vector<size_t>& axes);
+
+    bool operator==(const Tensor<T>& other) const;
+    bool operator!=(const Tensor<T>& other) const;
+
+    void to(Device device);
+    std::string serialize() const;
+    static Tensor<T> deserialize(const std::string& data);
+    void deserialize(const std::vector<uint8_t>& data);
+
     TensorView<T> view(size_t index);
     const TensorView<T> view(size_t index) const;
 
-    // Convenience method for at()
-    T& at(const std::vector<size_t>& indices);
-    const T& at(const std::vector<size_t>& indices) const;
-    void set_at(const std::vector<size_t>& indices, T value);
-
-    // Function call operator for multi-dimensional access
-    template <typename... Args>
-    T& operator()(Args... indices);
-
-    template <typename... Args>
-    const T& operator()(Args... indices) const;
-
-    // Reshape operations
-    void reshape(const std::vector<size_t>& new_shape);
-
-    // Transform operation
-    void transform(std::function<T(const T&)> func);
-
-    // Permute operation
-    std::vector<size_t> permute(const std::vector<size_t>& permutation);
-
-    // Comparison operators
-    bool operator==(const Tensor& other) const;
-    bool operator!=(const Tensor& other) const;
-
-    // Serialization
-    std::string serialize() const;
-    static Tensor deserialize(const std::string& str);
+protected:
+    void calculate_strides();
+    size_t calculate_flat_index(const std::vector<size_t>& indices) const;
 
 private:
-    std::vector<size_t> shape_;
+    std::vector<size_t> dims_;
+    std::vector<size_t> strides_;
     std::vector<T> data_;
-
-    size_t calculate_size(const std::vector<size_t>& shape) const;
-    void validate_shape(const std::vector<size_t>& shape) const;
-    size_t calculate_index(const std::vector<size_t>& indices) const;
-    void validate_indices(const std::vector<size_t>& indices) const;
-
-    // Friend declaration for TensorView
-    friend class TensorView<T>;
+    Device device_;
 };
 
 } // namespace dlf
 
-#include "tensor/tensor.hpp"
+#include "tensor_impl.hpp"

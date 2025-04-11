@@ -6,3 +6,6 @@ venv
 *egg-info*
 *cpython*.so
 Testing
+__pycache__
+*dylib*
+*lib*
