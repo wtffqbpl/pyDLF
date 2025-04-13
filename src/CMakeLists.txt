@@ -1,7 +1,7 @@
 set(target dlf)
 add_library(${target} SHARED 
     dummy_code.cc
-    tensor/tensor.cpp
+    tensor/tensor.cc
 )
 
 target_include_directories(${target}
@@ -17,8 +17,8 @@ target_include_directories(${target} PRIVATE ${ARMADILLO_INCLUDE_DIR})
 
 # Add the main library
 add_library(pydlf SHARED
-    tensor/tensor.cpp
-    logger/logger.cpp
+    tensor/tensor.cc
+    logger/logger.cc
 )
 
 target_include_directories(pydlf PUBLIC
