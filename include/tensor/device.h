@@ -6,7 +6,7 @@ namespace dlf {
 
 enum class DeviceType {
     CPU,
-    CUDA  // 未来支持
+    CUDA  // Support for CUDA in the future
 };
 
 class Device {
